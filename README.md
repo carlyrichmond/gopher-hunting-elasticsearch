@@ -8,6 +8,24 @@ This repository provides an introductory example of using the Elasticsearch Go c
 
 # How to Run
 
+## Pre-requisites
+
+This script requires setting the essential environment variables before running the script. I recommend using something like `direnv`, invoked via `.envrc` and then adding the variables to a top-level `.env` file. 
+
+The following environment variables are required:
+
+- `ELASTIC_CLOUD_ID=<MY_INSTANCE_CLOUD_ID>` 
+- `ELASTIC_API_KEY=<MY_API_KEY>`
+
+## Starting the server
+
+Running `server.go` will start a `net/http` server that you can use to query Elasticsearch:
+
+```bash
+cd server
+go run .
+```
+
 # Slides
 
 # Sources
