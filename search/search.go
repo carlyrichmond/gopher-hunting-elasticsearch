@@ -49,9 +49,9 @@ func KeywordSearch(term string) []Rodent {
 // Vector search example
 func VectorSearch(term string) []Rodent {
 	res, err := client.Search().
-		Index("search-rodents").
+		Index("vector-search-rodents").
 		Knn(types.KnnQuery{
-			Field:         "ml.inference.predicted_value",
+			Field:         "text_embedding.predicted_value",
 			K:             10,
 			NumCandidates: 10,
 			QueryVectorBuilder: &types.QueryVectorBuilder{
