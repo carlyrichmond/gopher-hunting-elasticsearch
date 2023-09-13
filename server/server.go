@@ -19,7 +19,13 @@ func main() {
 		fmt.Println("Gopher count", len(gophers))
 
 		fmt.Fprintf(w, "%+v", gophers)
-		//fmt.Fprintf(w, len(gophers))
+	})
+
+	http.HandleFunc("/vector-gophers", func(w http.ResponseWriter, r *http.Request) {
+		var gophers = search.VectorSearch("gopher")
+		fmt.Println("Gopher count", len(gophers))
+
+		fmt.Fprintf(w, "%+v", gophers)
 	})
 
 	fs := http.FileServer(http.Dir("static/"))

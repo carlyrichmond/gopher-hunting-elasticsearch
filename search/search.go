@@ -39,7 +39,30 @@ func KeywordSearch(term string) []Rodent {
 		Do(context.Background())
 
 	if err != nil {
-		log.Fatal("Unable to get gophers with keyword search")
+		log.Fatal(err)
+		return nil
+	}
+
+	return GetRodents(res.Hits.Hits)
+}
+
+// Vector search example
+func VectorSearch(term string) []Rodent {
+	res, err := client.Search().
+		Index("search-rodents").
+		Knn(types.KnnQuery{
+			Field:         "ml.inference.predicted_value",
+			K:             10,
+			NumCandidates: 10,
+			QueryVectorBuilder: &types.QueryVectorBuilder{
+				TextEmbedding: &types.TextEmbedding{
+					ModelId:   "sentence-transformers__msmarco-minilm-l-12-v3",
+					ModelText: term,
+				},
+			}}).Do(context.Background())
+
+	if err != nil {
+		log.Fatal(err)
 		return nil
 	}
 
