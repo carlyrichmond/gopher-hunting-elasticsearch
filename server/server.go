@@ -35,6 +35,20 @@ func main() {
 		fmt.Fprintf(w, "%+v", gophers)
 	})
 
+	http.HandleFunc("/hybrid-gophers", func(w http.ResponseWriter, r *http.Request) {
+		var gophers = search.HybridSearchWithBoost("gopher")
+		fmt.Println("Gopher count", len(gophers))
+
+		fmt.Fprintf(w, "%+v", gophers)
+	})
+
+	http.HandleFunc("/rrf-gophers", func(w http.ResponseWriter, r *http.Request) {
+		var gophers = search.HybridSearchWithRRF("gopher")
+		fmt.Println("Gopher count", len(gophers))
+
+		fmt.Fprintf(w, "%+v", gophers)
+	})
+
 	fs := http.FileServer(http.Dir("static/"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 

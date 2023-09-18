@@ -41,6 +41,8 @@ Navigate to the below URLs to obtain the Gopher search results for each search t
 * Keyword: [http://localhost/gophers](http://localhost/gophers)
 * Vector: [http://localhost/vector-gophers](http://localhost/vector-gophers)
 * Vector with filter: [http://localhost/filtered-gophers](http://localhost/filtered-gophers)
+* Hybrid search with manual boosting: [http://localhost/hybrid-gophers](http://localhost/hybrid-gophers)
+* Hybrid search with RRF: [http://localhost/rrf-gophers](http://localhost/rrf-gophers)
 
 ## Slides
 

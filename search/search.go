@@ -79,7 +79,7 @@ func VectorSearchWithFilter(term string) []Rodent {
 			Filter: []types.Query{
 				{
 					Match: map[string]types.MatchQuery{
-						"title": {Query: "rodent"},
+						"body_content": {Query: "rodent"},
 					},
 				},
 			},
@@ -90,6 +90,78 @@ func VectorSearchWithFilter(term string) []Rodent {
 					ModelText: term,
 				},
 			}}).Do(context.Background())
+
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+
+	return GetRodents(res.Hits.Hits)
+}
+
+// Hybrid search example
+func HybridSearchWithBoost(term string) []Rodent {
+	var knnBoost float32 = 0.2
+
+	res, err := client.Search().
+		Index("vector-search-rodents").
+		Knn(types.KnnQuery{
+			Field:         "text_embedding.predicted_value",
+			Boost:         &knnBoost,
+			K:             10,
+			NumCandidates: 10,
+			QueryVectorBuilder: &types.QueryVectorBuilder{
+				TextEmbedding: &types.TextEmbedding{
+					ModelId:   "sentence-transformers__msmarco-minilm-l-12-v3",
+					ModelText: term,
+				},
+			}}).
+		Query(&types.Query{
+			Match: map[string]types.MatchQuery{
+				"title": {Query: term},
+			},
+		}).
+		From(0).
+		Size(2).
+		Do(context.Background())
+
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+
+	return GetRodents(res.Hits.Hits)
+}
+
+// Hybrid search with RRF
+func HybridSearchWithRRF(term string) []Rodent {
+	var windowSize int64 = 10 // min required
+	var rankConstant int64 = 42
+
+	res, err := client.Search().
+		Index("vector-search-rodents").
+		Knn(types.KnnQuery{
+			Field:         "text_embedding.predicted_value",
+			K:             10,
+			NumCandidates: 10,
+			QueryVectorBuilder: &types.QueryVectorBuilder{
+				TextEmbedding: &types.TextEmbedding{
+					ModelId:   "sentence-transformers__msmarco-minilm-l-12-v3",
+					ModelText: term,
+				},
+			}}).
+		Query(&types.Query{
+			Match: map[string]types.MatchQuery{
+				"title": {Query: term},
+			},
+		}).
+		Rank(&types.RankContainer{
+			Rrf: &types.RrfRank{
+				WindowSize:   &windowSize,
+				RankConstant: &rankConstant,
+			},
+		}).
+		Do(context.Background())
 
 	if err != nil {
 		log.Fatal(err)
