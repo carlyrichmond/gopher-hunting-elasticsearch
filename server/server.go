@@ -28,6 +28,13 @@ func main() {
 		fmt.Fprintf(w, "%+v", gophers)
 	})
 
+	http.HandleFunc("/filtered-gophers", func(w http.ResponseWriter, r *http.Request) {
+		var gophers = search.VectorSearchWithFilter("gopher")
+		fmt.Println("Gopher count", len(gophers))
+
+		fmt.Fprintf(w, "%+v", gophers)
+	})
+
 	fs := http.FileServer(http.Dir("static/"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 

@@ -69,6 +69,36 @@ func VectorSearch(term string) []Rodent {
 	return GetRodents(res.Hits.Hits)
 }
 
+// Vector search example with filter
+func VectorSearchWithFilter(term string) []Rodent {
+	res, err := client.Search().
+		Index("vector-search-rodents").
+		Knn(types.KnnQuery{
+			Field: "text_embedding.predicted_value",
+			K:     10,
+			Filter: []types.Query{
+				{
+					Match: map[string]types.MatchQuery{
+						"title": {Query: "rodent"},
+					},
+				},
+			},
+			NumCandidates: 10,
+			QueryVectorBuilder: &types.QueryVectorBuilder{
+				TextEmbedding: &types.TextEmbedding{
+					ModelId:   "sentence-transformers__msmarco-minilm-l-12-v3",
+					ModelText: term,
+				},
+			}}).Do(context.Background())
+
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+
+	return GetRodents(res.Hits.Hits)
+}
+
 func GetRodents(hits []types.Hit) []Rodent {
 	var rodents []Rodent
 

@@ -40,6 +40,7 @@ Navigate to the below URLs to obtain the Gopher search results for each search t
 
 * Keyword: [http://localhost/gophers](http://localhost/gophers)
 * Vector: [http://localhost/vector-gophers](http://localhost/vector-gophers)
+* Vector with filter: [http://localhost/filtered-gophers](http://localhost/filtered-gophers)
 
 ## Slides
 
