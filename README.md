@@ -77,7 +77,8 @@ Check out the below resources to learn more about Elasticsearch, Keyword Search 
 ### Vector Search
 
 1. [code.sajari.com/word2vec](https://pkg.go.dev/code.sajari.com/word2vec)
-2. [What is Vector Search | Elastic](https://www.elastic.co/what-is/vector-search)
+2. [huggingface | pkg.go.dev](https://pkg.go.dev/github.com/nlpodyssey/spago/pkg/nlp/transformers/huggingface)
+3. [What is Vector Search | Elastic](https://www.elastic.co/what-is/vector-search)
 
 ### LLMs and Natural Language Processing
 
