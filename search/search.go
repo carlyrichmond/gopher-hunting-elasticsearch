@@ -16,14 +16,25 @@ type Rodent struct {
 	Url   string `json:"url"`
 }
 
-// Elasticsearch init
-var cloudID = os.Getenv("ELASTIC_CLOUD_ID")
-var apiKey = os.Getenv("ELASTIC_API_KEY")
+var client = GetElasticsearchClient()
 
-var client, err = elasticsearch.NewTypedClient(elasticsearch.Config{
-	CloudID: cloudID,
-	APIKey:  apiKey,
-})
+// Elasticsearch init
+func GetElasticsearchClient() *elasticsearch.TypedClient {
+	var cloudID = os.Getenv("ELASTIC_CLOUD_ID")
+	var apiKey = os.Getenv("ELASTIC_API_KEY")
+
+	var es, err = elasticsearch.NewTypedClient(elasticsearch.Config{
+		CloudID: cloudID,
+		APIKey:  apiKey,
+	})
+
+	if err != nil {
+		log.Fatalf("Unable to connect: %s", err)
+		os.Exit(3)
+	}
+
+	return es
+}
 
 // Traditional keyword search example
 func KeywordSearch(term string) []Rodent {
