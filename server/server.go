@@ -15,35 +15,49 @@ func main() {
 	})
 
 	http.HandleFunc("/gophers", func(w http.ResponseWriter, r *http.Request) {
-		var gophers = search.KeywordSearch("gopher")
+		var gophers = search.KeywordSearch("What do Gophers eat?")
 		fmt.Println("Gopher count", len(gophers))
 
 		fmt.Fprintf(w, "%+v", gophers)
 	})
 
 	http.HandleFunc("/vector-gophers", func(w http.ResponseWriter, r *http.Request) {
-		var gophers = search.VectorSearch("gopher")
+		var gophers = search.VectorSearch("What do Gophers eat?")
+		fmt.Println("Gopher count", len(gophers))
+
+		fmt.Fprintf(w, "%+v", gophers)
+	})
+
+	http.HandleFunc("/embedding-vector-gophers", func(w http.ResponseWriter, r *http.Request) {
+		var gophers = search.VectorSearch("What do Gophers eat?")
 		fmt.Println("Gopher count", len(gophers))
 
 		fmt.Fprintf(w, "%+v", gophers)
 	})
 
 	http.HandleFunc("/filtered-gophers", func(w http.ResponseWriter, r *http.Request) {
-		var gophers = search.VectorSearchWithFilter("gopher")
+		var gophers = search.VectorSearchWithFilter("What do Gophers eat?")
+		fmt.Println("Gopher count", len(gophers))
+
+		fmt.Fprintf(w, "%+v", gophers)
+	})
+
+	http.HandleFunc("/generated-vector-gophers", func(w http.ResponseWriter, r *http.Request) {
+		var gophers = search.VectorSearchWithGeneratedQueryVector("What do Gophers eat?")
 		fmt.Println("Gopher count", len(gophers))
 
 		fmt.Fprintf(w, "%+v", gophers)
 	})
 
 	http.HandleFunc("/hybrid-gophers", func(w http.ResponseWriter, r *http.Request) {
-		var gophers = search.HybridSearchWithBoost("gopher")
+		var gophers = search.HybridSearchWithBoost("What do Gophers eat?")
 		fmt.Println("Gopher count", len(gophers))
 
 		fmt.Fprintf(w, "%+v", gophers)
 	})
 
 	http.HandleFunc("/rrf-gophers", func(w http.ResponseWriter, r *http.Request) {
-		var gophers = search.HybridSearchWithRRF("gopher")
+		var gophers = search.HybridSearchWithRRF("What do Gophers eat?")
 		fmt.Println("Gopher count", len(gophers))
 
 		fmt.Fprintf(w, "%+v", gophers)

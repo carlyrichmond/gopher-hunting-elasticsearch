@@ -1,9 +1,12 @@
 package search
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/elastic/go-elasticsearch/v8"
@@ -78,6 +81,74 @@ func VectorSearch(term string) []Rodent {
 	}
 
 	return GetRodents(res.Hits.Hits)
+}
+
+// Vector search example with HuggingFace Generated Embeddings
+func VectorSearchWithGeneratedQueryVector(term string) []Rodent {
+	var vector []float32 = GetTextEmbeddingForQuery(term)
+
+	if vector == nil {
+		log.Fatal("Unable to generate vector")
+		return nil
+	}
+
+	res, err := client.KnnSearch("vector-search-rodents").
+		Knn(&types.CoreKnnQuery{
+			Field:         "text_embedding.predicted_value",
+			K:             10,
+			NumCandidates: 10,
+			QueryVector:   vector,
+		}).
+		Do(context.Background())
+
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+
+	return GetRodents(res.Hits.Hits)
+}
+
+// HuggingFace text embedding helper
+func GetTextEmbeddingForQuery(term string) []float32 {
+	// HTTP endpoint
+	model := "sentence-transformers/msmarco-minilm-l-12-v3"
+	posturl := fmt.Sprintf("https://api-inference.huggingface.co/pipeline/feature-extraction/%s", model)
+
+	// JSON body
+	body := []byte(fmt.Sprintf(`{
+		"inputs": "%s",
+		"options": {"wait_for_model":True}
+	}`, term))
+
+	// Create a HTTP post request
+	r, err := http.NewRequest("POST", posturl, bytes.NewBuffer(body))
+
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+
+	token := "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"
+	r.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+
+	client := &http.Client{}
+	res, err := client.Do(r)
+	if err != nil {
+		panic(err)
+	}
+
+	defer res.Body.Close()
+
+	var post []float32
+	derr := json.NewDecoder(res.Body).Decode(&post)
+
+	if derr != nil {
+		log.Fatal(derr)
+		return nil
+	}
+
+	return post
 }
 
 // Vector search example with filter
