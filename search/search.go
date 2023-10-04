@@ -129,7 +129,7 @@ func GetTextEmbeddingForQuery(term string) []float32 {
 		return nil
 	}
 
-	token := "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"
+	token := os.Getenv("HUGGING_FACE_TOKEN")
 	r.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 
 	client := &http.Client{}
