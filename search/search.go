@@ -184,6 +184,7 @@ func VectorSearchWithFilter(term string) []Rodent {
 // Hybrid search example
 func HybridSearchWithBoost(term string) []Rodent {
 	var knnBoost float32 = 0.2
+	var queryBoost float32 = 0.8
 
 	res, err := client.Search().
 		Index("vector-search-rodents").
@@ -200,11 +201,12 @@ func HybridSearchWithBoost(term string) []Rodent {
 			}}).
 		Query(&types.Query{
 			Match: map[string]types.MatchQuery{
-				"title": {Query: term},
+				"title": {
+					Query: term,
+					Boost: &queryBoost,
+				},
 			},
 		}).
-		From(0).
-		Size(2).
 		Do(context.Background())
 
 	if err != nil {
