@@ -83,7 +83,7 @@ func VectorSearch(term string) []Rodent {
 	return GetRodents(res.Hits.Hits)
 }
 
-// Vector search example with HuggingFace Generated Embeddings
+// Vector search example with Hugging Face Generated Embeddings
 func VectorSearchWithGeneratedQueryVector(term string) []Rodent {
 	var vector []float32 = GetTextEmbeddingForQuery(term)
 
@@ -92,8 +92,9 @@ func VectorSearchWithGeneratedQueryVector(term string) []Rodent {
 		return nil
 	}
 
-	res, err := client.KnnSearch("vector-search-rodents").
-		Knn(&types.CoreKnnQuery{
+	res, err := client.Search().
+		Index("vector-search-rodents").
+		Knn(types.KnnQuery{
 			Field:         "text_embedding.predicted_value",
 			K:             10,
 			NumCandidates: 10,
