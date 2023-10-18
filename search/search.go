@@ -5,9 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/elastic/elastic-transport-go/v8/elastictransport"
 	"net/http"
 	"os"
+
+	"github.com/elastic/elastic-transport-go/v8/elastictransport"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
@@ -257,7 +258,7 @@ func getRodents(hits []types.Hit) ([]Rodent, error) {
 		err := json.Unmarshal(hit.Source_, &currentRodent)
 
 		if err != nil {
-			return nil, fmt.Errorf("an error occured while unmarshaling rodent %s: %w", hit.Id_, err)
+			return nil, fmt.Errorf("an error occurred while unmarshaling rodent %s: %w", hit.Id_, err)
 		}
 
 		currentRodent.ID = hit.Id_
