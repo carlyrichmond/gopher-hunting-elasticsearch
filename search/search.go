@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"github.com/elastic/elastic-transport-go/v8/elastictransport"
 	"net/http"
 	"os"
 
@@ -19,28 +19,26 @@ type Rodent struct {
 	Url   string `json:"url"`
 }
 
-var client = GetElasticsearchClient()
-
 // Elasticsearch init
-func GetElasticsearchClient() *elasticsearch.TypedClient {
+func GetElasticsearchClient() (*elasticsearch.TypedClient, error) {
 	var cloudID = os.Getenv("ELASTIC_CLOUD_ID")
 	var apiKey = os.Getenv("ELASTIC_API_KEY")
 
 	var es, err = elasticsearch.NewTypedClient(elasticsearch.Config{
 		CloudID: cloudID,
 		APIKey:  apiKey,
+		Logger:  &elastictransport.ColorLogger{os.Stdout, true, true},
 	})
 
 	if err != nil {
-		log.Fatalf("Unable to connect: %s", err)
-		os.Exit(3)
+		return nil, fmt.Errorf("unable to connect: %w", err)
 	}
 
-	return es
+	return es, nil
 }
 
 // Traditional keyword search example
-func KeywordSearch(term string) []Rodent {
+func KeywordSearch(client *elasticsearch.TypedClient, term string) ([]Rodent, error) {
 	res, err := client.Search().
 		Index("search-rodents").
 		Query(&types.Query{
@@ -53,15 +51,14 @@ func KeywordSearch(term string) []Rodent {
 		Do(context.Background())
 
 	if err != nil {
-		log.Fatal(err)
-		return nil
+		return nil, fmt.Errorf("could not search for rodents: %w", err)
 	}
 
-	return GetRodents(res.Hits.Hits)
+	return getRodents(res.Hits.Hits)
 }
 
 // Vector search example
-func VectorSearch(term string) []Rodent {
+func VectorSearch(client *elasticsearch.TypedClient, term string) ([]Rodent, error) {
 	res, err := client.Search().
 		Index("vector-search-rodents").
 		Knn(types.KnnQuery{
@@ -76,20 +73,21 @@ func VectorSearch(term string) []Rodent {
 			}}).Do(context.Background())
 
 	if err != nil {
-		log.Fatal(err)
-		return nil
+		return nil, fmt.Errorf("error in rodents vector search: %w", err)
 	}
 
-	return GetRodents(res.Hits.Hits)
+	return getRodents(res.Hits.Hits)
 }
 
 // Vector search example with Hugging Face Generated Embeddings
-func VectorSearchWithGeneratedQueryVector(term string) []Rodent {
-	var vector []float32 = GetTextEmbeddingForQuery(term)
+func VectorSearchWithGeneratedQueryVector(client *elasticsearch.TypedClient, term string) ([]Rodent, error) {
+	vector, err := GetTextEmbeddingForQuery(term)
+	if err != nil {
+		return nil, err
+	}
 
 	if vector == nil {
-		log.Fatal("Unable to generate vector")
-		return nil
+		return nil, fmt.Errorf("unable to generate vector: %w", err)
 	}
 
 	res, err := client.Search().
@@ -103,31 +101,29 @@ func VectorSearchWithGeneratedQueryVector(term string) []Rodent {
 		Do(context.Background())
 
 	if err != nil {
-		log.Fatal(err)
-		return nil
+		return nil, err
 	}
 
-	return GetRodents(res.Hits.Hits)
+	return getRodents(res.Hits.Hits)
 }
 
 // HuggingFace text embedding helper
-func GetTextEmbeddingForQuery(term string) []float32 {
+func GetTextEmbeddingForQuery(term string) ([]float32, error) {
 	// HTTP endpoint
 	model := "sentence-transformers/msmarco-minilm-l-12-v3"
 	posturl := fmt.Sprintf("https://api-inference.huggingface.co/pipeline/feature-extraction/%s", model)
 
 	// JSON body
 	body := []byte(fmt.Sprintf(`{
-		"inputs": "%s",
-		"options": {"wait_for_model":True}
-	}`, term))
+        "inputs": "%s",
+        "options": {"wait_for_model":True}
+    }`, term))
 
 	// Create a HTTP post request
 	r, err := http.NewRequest("POST", posturl, bytes.NewBuffer(body))
 
 	if err != nil {
-		log.Fatal(err)
-		return nil
+		return nil, err
 	}
 
 	token := os.Getenv("HUGGING_FACE_TOKEN")
@@ -136,7 +132,7 @@ func GetTextEmbeddingForQuery(term string) []float32 {
 	client := &http.Client{}
 	res, err := client.Do(r)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	defer res.Body.Close()
@@ -145,15 +141,14 @@ func GetTextEmbeddingForQuery(term string) []float32 {
 	derr := json.NewDecoder(res.Body).Decode(&post)
 
 	if derr != nil {
-		log.Fatal(derr)
-		return nil
+		return nil, err
 	}
 
-	return post
+	return post, nil
 }
 
 // Vector search example with filter
-func VectorSearchWithFilter(term string) []Rodent {
+func VectorSearchWithFilter(client *elasticsearch.TypedClient, term string) ([]Rodent, error) {
 	res, err := client.Search().
 		Index("vector-search-rodents").
 		Knn(types.KnnQuery{
@@ -175,15 +170,14 @@ func VectorSearchWithFilter(term string) []Rodent {
 			}}).Do(context.Background())
 
 	if err != nil {
-		log.Fatal(err)
-		return nil
+		return nil, err
 	}
 
-	return GetRodents(res.Hits.Hits)
+	return getRodents(res.Hits.Hits)
 }
 
 // Hybrid search example
-func HybridSearchWithBoost(term string) []Rodent {
+func HybridSearchWithBoost(client *elasticsearch.TypedClient, term string) ([]Rodent, error) {
 	var knnBoost float32 = 0.2
 	var queryBoost float32 = 0.8
 
@@ -211,16 +205,16 @@ func HybridSearchWithBoost(term string) []Rodent {
 		Do(context.Background())
 
 	if err != nil {
-		log.Fatal(err)
-		return nil
+		return nil, err
 	}
 
-	return GetRodents(res.Hits.Hits)
+	return getRodents(res.Hits.Hits)
 }
 
 // Hybrid search with RRF
-func HybridSearchWithRRF(term string) []Rodent {
-	var windowSize int64 = 10 // min required
+func HybridSearchWithRRF(client *elasticsearch.TypedClient, term string) ([]Rodent, error) {
+	// Minimum required window size for the default result size of 10
+	var windowSize int64 = 10
 	var rankConstant int64 = 42
 
 	res, err := client.Search().
@@ -249,14 +243,13 @@ func HybridSearchWithRRF(term string) []Rodent {
 		Do(context.Background())
 
 	if err != nil {
-		log.Fatal(err)
-		return nil
+		return nil, err
 	}
 
-	return GetRodents(res.Hits.Hits)
+	return getRodents(res.Hits.Hits)
 }
 
-func GetRodents(hits []types.Hit) []Rodent {
+func getRodents(hits []types.Hit) ([]Rodent, error) {
 	var rodents []Rodent
 
 	for _, hit := range hits {
@@ -264,13 +257,12 @@ func GetRodents(hits []types.Hit) []Rodent {
 		err := json.Unmarshal(hit.Source_, &currentRodent)
 
 		if err != nil {
-			log.Fatal(err)
-			return nil
+			return nil, fmt.Errorf("an error occured while unmarshaling rodent %s: %w", hit.Id_, err)
 		}
 
 		currentRodent.ID = hit.Id_
 		rodents = append(rodents, currentRodent)
 	}
 
-	return rodents
+	return rodents, nil
 }
