@@ -97,7 +97,7 @@ func main() {
 
 	const port = ":8080"
 
-	log.Println("starting server on port 80")
+	log.Println("starting server on port 8080")
 	http.ListenAndServe(port, nil)
 }
 

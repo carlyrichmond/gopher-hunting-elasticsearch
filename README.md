@@ -6,11 +6,13 @@ This repository provides an introductory example of using the Elasticsearch Go c
 2. Vector search, making use of the [sentence-transformers/msmarco-MiniLM-L-12-v3 model from Hugging Face](https://huggingface.co/sentence-transformers/msmarco-MiniLM-L-12-v3) to generate the embeddings.
 3. Hybrid search combining the keyword and vector approaches.
 
+If you are looking to start using Elasticsearch with Go I recommend checking out the [client documentation](https://www.elastic.co/guide/en/elasticsearch/client/go-api/current/index.html) and [this series](https://www.elastic.co/search-labs/blog/perform-text-queries-with-the-elasticsearch-go-client) covering search fundamentals with the Go client.
+
 ## How to Run
 
-# Elasticsearch Instance Setup
+### Elasticsearch Instance Setup
 
-The quickest way to setup your own cluster is to register for a [free trial of Elastic Cloud](https://www.elastic.co/cloud/elasticsearch-service/signup). You'll need to perform these additional steps:
+The quickest way to set up your own cluster is to register for a [free trial of Elastic Cloud](https://www.elastic.co/cloud/elasticsearch-service/signup). You'll need to perform these additional steps:
 
 1. Note your Cloud ID
 2. [Generate an API Key](https://www.elastic.co/guide/en/kibana/current/api-keys.html)
@@ -20,7 +22,7 @@ The quickest way to setup your own cluster is to register for a [free trial of E
 
 ### Pre-requisites
 
-This script requires setting the essential environment variables before running the script. I recommend using something like `direnv`, invoked via `.envrc` and then adding the variables to a top-level `.env` file. Alternatively you can explicitly set the environment variables in your current session according to your operating system.
+This script requires setting the essential environment variables before running the script. I recommend using something like `direnv`, invoked via `.envrc` and then adding the variables to a top-level `.env` file. Alternatively, you can explicitly set the environment variables in your current session according to your operating system.
 
 The following environment variables are required:
 
@@ -29,7 +31,7 @@ The following environment variables are required:
 
 ### Starting the server
 
-Running `server.go` will start a `net/http` server on port `80` that you can use to query Elasticsearch:
+Running `server.go` will start a `net/http` server on port `8080` that you can use to query Elasticsearch:
 
 ```bash
 cd server
@@ -38,12 +40,12 @@ go run .
 
 Navigate to the below URLs to obtain the Gopher search results for each search type:
 
-* Keyword: [http://localhost/gophers](http://localhost/gophers)
-* Vector: [http://localhost/vector-gophers](http://localhost/vector-gophers)
-* Vector with keyword filter: [http://localhost/filtered-gophers](http://localhost/filtered-gophers)
-* Vector with query embeddings generated using the [Hugging Face inference API](https://huggingface.co/blog/getting-started-with-embeddings): [http://localhost/filtered-gophers](http://localhost/filtered-gophers)
-* Hybrid search with manual boosting: [http://localhost/hybrid-gophers](http://localhost/hybrid-gophers)
-* Hybrid search with RRF: [http://localhost/rrf-gophers](http://localhost/rrf-gophers)
+* Keyword: [http://localhost:8080/gophers](http://localhost:8080/gophers)
+* Vector: [http://localhost:8080/vector-gophers](http://localhost:8080/vector-gophers)
+* Vector with keyword filter: [http://localhost:8080/filtered-gophers](http://localhost:8080/filtered-gophers)
+* Vector with query embeddings generated using the [Hugging Face inference API](https://huggingface.co/blog/getting-started-with-embeddings): [http://localhost:8080/embedding-vector-gophers](http://localhost:8080/embedding-vector-gophers)
+* Hybrid search with manual boosting: [http://localhost:8080/hybrid-gophers](http://localhost:8080/hybrid-gophers)
+* Hybrid search with RRF: [http://localhost:8080/rrf-gophers](http://localhost:8080/rrf-gophers)
 
 ## Slides
 
@@ -77,6 +79,9 @@ Check out the below resources to learn more about Elasticsearch, Keyword Search 
 1. [Elasticsearch](https://www.elastic.co/elasticsearch/)
 2. [Elasticsearch Go Client](https://www.elastic.co/guide/en/elasticsearch/client/go-api/current/index.html)
 3. [Understanding Analysis in Elasticsearch (Analyzers) by Bo Andersen | #CodingExplained](https://codingexplained.com/coding/elasticsearch/understanding-analysis-in-elasticsearch-analyzers)
+4. [Perform text queries with the Elasticsearch Go client | Elastic Search Labs](https://www.elastic.co/search-labs/blog/perform-text-queries-with-the-elasticsearch-go-client)
+5. [Perform vector search in Elasticsearch with the Elasticsearch Go client | Elastic Search Labs](https://www.elastic.co/search-labs/blog/perform-vector-search-with-the-elasticsearch-go-client)
+6. [Using hybrid search for gopher hunting with Elasticsearch and Go | Elastic Search Labs](https://www.elastic.co/search-labs/blog/hybrid-search-with-the-elasticsearch-go-client)
 
 ### Vector Search
 

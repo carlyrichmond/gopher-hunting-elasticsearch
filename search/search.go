@@ -60,18 +60,34 @@ func KeywordSearch(client *elasticsearch.TypedClient, term string) ([]Rodent, er
 
 // Vector search example
 func VectorSearch(client *elasticsearch.TypedClient, term string) ([]Rodent, error) {
+	var k = 10
+	var numCandidates = 10
+
 	res, err := client.Search().
 		Index("vector-search-rodents").
-		Knn(types.KnnQuery{
+		Knn(types.KnnSearch{
 			Field:         "text_embedding.predicted_value",
-			K:             10,
-			NumCandidates: 10,
+			K:             &k,
+			NumCandidates: &numCandidates,
 			QueryVectorBuilder: &types.QueryVectorBuilder{
 				TextEmbedding: &types.TextEmbedding{
 					ModelId:   "sentence-transformers__msmarco-minilm-l-12-v3",
 					ModelText: term,
 				},
 			}}).Do(context.Background())
+
+	/*res, err := client.Search().
+	Index("vector-search-rodents").
+	Knn(types.KnnQuery{
+		Field:         "text_embedding.predicted_value",
+		K:             10,
+		NumCandidates: 10,
+		QueryVectorBuilder: &types.QueryVectorBuilder{
+			TextEmbedding: &types.TextEmbedding{
+				ModelId:   "sentence-transformers__msmarco-minilm-l-12-v3",
+				ModelText: term,
+			},
+		}}).Do(context.Background())*/
 
 	if err != nil {
 		return nil, fmt.Errorf("error in rodents vector search: %w", err)
@@ -91,15 +107,17 @@ func VectorSearchWithGeneratedQueryVector(client *elasticsearch.TypedClient, ter
 		return nil, fmt.Errorf("unable to generate vector: %w", err)
 	}
 
+	var k = 10
+	var numCandidates = 10
+
 	res, err := client.Search().
 		Index("vector-search-rodents").
-		Knn(types.KnnQuery{
+		Knn(types.KnnSearch{
 			Field:         "text_embedding.predicted_value",
-			K:             10,
-			NumCandidates: 10,
+			K:             &k,
+			NumCandidates: &numCandidates,
 			QueryVector:   vector,
-		}).
-		Do(context.Background())
+		}).Do(context.Background())
 
 	if err != nil {
 		return nil, err
@@ -150,11 +168,14 @@ func GetTextEmbeddingForQuery(term string) ([]float32, error) {
 
 // Vector search example with filter
 func VectorSearchWithFilter(client *elasticsearch.TypedClient, term string) ([]Rodent, error) {
+	var k = 10
+	var numCandidates = 10
+
 	res, err := client.Search().
 		Index("vector-search-rodents").
-		Knn(types.KnnQuery{
+		Knn(types.KnnSearch{
 			Field: "text_embedding.predicted_value",
-			K:     10,
+			K:     &k,
 			Filter: []types.Query{
 				{
 					Match: map[string]types.MatchQuery{
@@ -162,7 +183,7 @@ func VectorSearchWithFilter(client *elasticsearch.TypedClient, term string) ([]R
 					},
 				},
 			},
-			NumCandidates: 10,
+			NumCandidates: &numCandidates,
 			QueryVectorBuilder: &types.QueryVectorBuilder{
 				TextEmbedding: &types.TextEmbedding{
 					ModelId:   "sentence-transformers__msmarco-minilm-l-12-v3",
@@ -179,16 +200,18 @@ func VectorSearchWithFilter(client *elasticsearch.TypedClient, term string) ([]R
 
 // Hybrid search example
 func HybridSearchWithBoost(client *elasticsearch.TypedClient, term string) ([]Rodent, error) {
+	var k = 10
+	var numCandidates = 10
 	var knnBoost float32 = 0.2
 	var queryBoost float32 = 0.8
 
 	res, err := client.Search().
 		Index("vector-search-rodents").
-		Knn(types.KnnQuery{
+		Knn(types.KnnSearch{
 			Field:         "text_embedding.predicted_value",
 			Boost:         &knnBoost,
-			K:             10,
-			NumCandidates: 10,
+			K:             &k,
+			NumCandidates: &numCandidates,
 			QueryVectorBuilder: &types.QueryVectorBuilder{
 				TextEmbedding: &types.TextEmbedding{
 					ModelId:   "sentence-transformers__msmarco-minilm-l-12-v3",
@@ -214,16 +237,19 @@ func HybridSearchWithBoost(client *elasticsearch.TypedClient, term string) ([]Ro
 
 // Hybrid search with RRF
 func HybridSearchWithRRF(client *elasticsearch.TypedClient, term string) ([]Rodent, error) {
+	var k = 10
+	var numCandidates = 10
+
 	// Minimum required window size for the default result size of 10
 	var windowSize int64 = 10
 	var rankConstant int64 = 42
 
 	res, err := client.Search().
 		Index("vector-search-rodents").
-		Knn(types.KnnQuery{
+		Knn(types.KnnSearch{
 			Field:         "text_embedding.predicted_value",
-			K:             10,
-			NumCandidates: 10,
+			K:             &k,
+			NumCandidates: &numCandidates,
 			QueryVectorBuilder: &types.QueryVectorBuilder{
 				TextEmbedding: &types.TextEmbedding{
 					ModelId:   "sentence-transformers__msmarco-minilm-l-12-v3",
@@ -261,7 +287,7 @@ func getRodents(hits []types.Hit) ([]Rodent, error) {
 			return nil, fmt.Errorf("an error occurred while unmarshaling rodent %s: %w", hit.Id_, err)
 		}
 
-		currentRodent.ID = hit.Id_
+		currentRodent.ID = *hit.Id_
 		rodents = append(rodents, currentRodent)
 	}
 
