@@ -76,19 +76,6 @@ func VectorSearch(client *elasticsearch.TypedClient, term string) ([]Rodent, err
 				},
 			}}).Do(context.Background())
 
-	/*res, err := client.Search().
-	Index("vector-search-rodents").
-	Knn(types.KnnQuery{
-		Field:         "text_embedding.predicted_value",
-		K:             10,
-		NumCandidates: 10,
-		QueryVectorBuilder: &types.QueryVectorBuilder{
-			TextEmbedding: &types.TextEmbedding{
-				ModelId:   "sentence-transformers__msmarco-minilm-l-12-v3",
-				ModelText: term,
-			},
-		}}).Do(context.Background())*/
-
 	if err != nil {
 		return nil, fmt.Errorf("error in rodents vector search: %w", err)
 	}
